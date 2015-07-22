@@ -58,6 +58,8 @@ class Affiliate_WP_Integrations {
 
 		require_once AFFILIATEWP_PLUGIN_DIR . 'includes/integrations/class-base.php';
 
+		$loaded = array();
+
 		do_action( 'affwp_integrations_load' );
 
 		foreach ( $this->enabled as $filename => $label ) {
@@ -66,11 +68,13 @@ class Affiliate_WP_Integrations {
 
 				require_once AFFILIATEWP_PLUGIN_DIR . 'includes/integrations/class-' . $filename . '.php';
 
+				$loaded[ $filename ] = $label;
+
 			}
 
 		}
 
-		do_action( 'affwp_integrations_loaded' );
+		do_action( 'affwp_integrations_loaded', $loaded );
 
 	}
 

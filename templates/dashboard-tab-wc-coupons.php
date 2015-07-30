@@ -13,7 +13,7 @@ $predefined_coupons = new WP_Query(
 	array(
 		'post_type'   => 'shop_coupon',
 		'post_status' => 'publish',
-		'meta_key'    => 'affwp_affiliate_coupons_allowed',
+		'meta_key'    => 'affwp_allow_affiliate_coupons',
 		'meta_value'  => 1,
 	)
 );
@@ -29,7 +29,7 @@ $predefined_coupons = new WP_Query(
 		<table class="affwp-table affwp-coupons-table">
 			<thead>
 				<tr>
-					<th><input type="checkbox" /></th>
+					<th><input type="checkbox"<?php disabled( ! $coupons->have_posts() ); ?> /></th>
 					<th>Coupon Code</th>
 					<th>Description</th>
 					<th>Amount</th>
@@ -51,7 +51,7 @@ $predefined_coupons = new WP_Query(
 
 					<tr>
 						<td><input type="checkbox" /></td>
-						<td><code><?php echo strtoupper( esc_html( $post->post_title ) ); ?></code></td>
+						<td><code><?php echo esc_html( $post->post_title ); ?></code></td>
 						<td><?php echo nl2br( esc_html( $post->post_excerpt ) ); ?></td>
 						<td><?php echo esc_html( $coupon_amount ); ?></td>
 						<td><?php echo absint( get_post_meta( $post->ID, 'usage_count', true ) ); ?></td>
@@ -95,12 +95,12 @@ $predefined_coupons = new WP_Query(
 		<hr>
 
 		<div class="affwp-wrap affwp-add-coupon-code-wrap">
-			<label for="affwp-add-coupon-code"><?php _e( 'Coupon Code', 'affiliate-wp' ); ?></label>
-			<input type="text" name="coupon_code" id="affwp-add-coupon-code" placeholder="e.g. TAKEOFF10" />
+			<label for="affwp-add-coupon-code"><?php _e( 'Custom Coupon Code', 'affiliate-wp' ); ?></label>
+			<input type="text" name="coupon_code" id="affwp-add-coupon-code" placeholder="e.g. takeoff10" />
 		</div>
 
 		<div class="affwp-wrap affwp-add-coupon-description-wrap">
-			<label for="affwp-add-coupon-description"><?php _e( 'Description', 'affiliate-wp' ); ?></label>
+			<label for="affwp-add-coupon-description"><?php _e( 'Custom Description', 'affiliate-wp' ); ?></label>
 			<textarea name="coupon_description" id="affwp-add-coupon-description" placeholder="e.g. Take 10% off any order!"></textarea>
 		</div>
 
@@ -122,6 +122,7 @@ $predefined_coupons = new WP_Query(
 			<input type="hidden" class="affwp-affiliate-uid" value="<?php echo esc_attr( affwp_get_affiliate_uid() ); ?>" />
 			<input type="submit" class="button" value="<?php esc_attr_e( 'Add Coupon', 'affiliate-wp' ); ?>" />
 		</div>
+
 	</form>
 
 </div>

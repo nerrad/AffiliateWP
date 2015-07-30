@@ -40,6 +40,7 @@ class Affiliate_WP_WooCommerce extends Affiliate_WP_Base {
 
 		add_action( 'woocommerce_coupon_options', array( $this, 'coupon_option' ) );
 		add_action( 'woocommerce_coupon_options_save', array( $this, 'store_discount_affiliate' ) );
+		add_action( 'woocommerce_coupon_options_save', array( $this, 'store_allow_affiliate_coupons' ) );
 
 		// Per product referral rates
 		add_action( 'woocommerce_product_options_general_product_data', array( $this, 'product_settings' ), 100 );
@@ -275,10 +276,11 @@ class Affiliate_WP_WooCommerce extends Affiliate_WP_Base {
 		add_filter( 'affwp_is_admin_page', '__return_true' );
 		affwp_admin_scripts();
 
-		$affiliate_id = get_post_meta( $post->ID, 'affwp_discount_affiliate', true );
-		$user_id      = affwp_get_affiliate_user_id( $affiliate_id );
-		$user         = get_userdata( $user_id );
-		$user_name    = $user ? $user->user_login : '';
+		$affiliate_id      = get_post_meta( $post->ID, 'affwp_discount_affiliate', true );
+		$user_id           = affwp_get_affiliate_user_id( $affiliate_id );
+		$user              = get_userdata( $user_id );
+		$user_name         = $user ? $user->user_login : '';
+		$affiliate_coupons = get_post_meta( $post->ID, 'affwp_allow_affiliate_coupons', true );
 ?>
 		<p class="form-field affwp-woo-coupon-field">
 			<label for="user_name"><?php _e( 'Affiliate Discount?', 'affiliate-wp' ); ?></label>
@@ -295,7 +297,7 @@ class Affiliate_WP_WooCommerce extends Affiliate_WP_Base {
 
 		<p class="form-field affwp_allow_affiliate_coupons_field ">
 			<label for="affwp_allow_affiliate_coupons">Affiliate Coupon?</label>
-			<input type="checkbox" class="checkbox" style="" name="affwp_allow_affiliate_coupons" id="affwp_allow_affiliate_coupons" value="yes">
+			<input type="checkbox" class="checkbox" style="" name="affwp_allow_affiliate_coupons" id="affwp_allow_affiliate_coupons" value="yes" <?php checked( $affiliate_coupons ); ?>>
 			<span class="description">Check this box if you want to allow affiliates to customize this coupon and promote it to their audience.</span>
 		</p>
 <?php
@@ -332,6 +334,26 @@ class Affiliate_WP_WooCommerce extends Affiliate_WP_Base {
 		$affiliate_id = affwp_get_affiliate_id( $user_id );
 
 		update_post_meta( $coupon_id, 'affwp_discount_affiliate', $affiliate_id );
+	}
+
+	/**
+	 * Stores the option to allow affiliates to customize this coupon
+	 *
+	 * @access  public
+	 * @since   1.1
+	*/
+	public function store_allow_affiliate_coupons( $coupon_id = 0 ) {
+
+		if ( empty( $_POST['affwp_allow_affiliate_coupons'] ) ) {
+
+			delete_post_meta( $coupon_id, 'affwp_allow_affiliate_coupons' );
+
+			return;
+
+		}
+
+		update_post_meta( $coupon_id, 'affwp_allow_affiliate_coupons', 1 );
+
 	}
 
 	/**
@@ -494,8 +516,8 @@ class Affiliate_WP_WooCommerce extends Affiliate_WP_Base {
 		}
 
 		?>
-		<li class="affwp-affiliate-dashboard-tab<?php echo $active_tab == 'coupons' ? ' active' : ''; ?>">
-			<a href="<?php echo esc_url( add_query_arg( 'tab', 'coupons' ) ); ?>"><?php _e( 'Coupons', 'affiliate-wp' ); ?></a>
+		<li class="affwp-affiliate-dashboard-tab<?php echo $active_tab == 'wc-coupons' ? ' active' : ''; ?>">
+			<a href="<?php echo esc_url( add_query_arg( 'tab', 'wc-coupons' ) ); ?>"><?php _e( 'Coupons', 'affiliate-wp' ); ?></a>
 		</li>
 		<?php
 

@@ -48,7 +48,7 @@ class Affiliate_WP_Upgrades {
 	/**
 	 * Perform database upgrades for version 1.1
 	 *
-	 * @access  public
+	 * @access  private
 	 * @since   1.1
 	*/
 	private function v11_upgrades() {
@@ -62,7 +62,7 @@ class Affiliate_WP_Upgrades {
 	/**
 	 * Perform database upgrades for version 1.2.1
 	 *
-	 * @access  public
+	 * @access  private
 	 * @since   1.2.1
 	*/
 	private function v121_upgrades() {
@@ -76,7 +76,7 @@ class Affiliate_WP_Upgrades {
 	/**
 	 * Perform database upgrades for version 1.3
 	 *
-	 * @access  public
+	 * @access  private
 	 * @since   1.3
 	 */
 	private function v13_upgrades() {
@@ -93,7 +93,7 @@ class Affiliate_WP_Upgrades {
 	/**
 	 * Perform database upgrades for version 1.6
 	 *
-	 * @access  public
+	 * @access  private
 	 * @since   1.6
 	 */
 	private function v16_upgrades() {
@@ -108,55 +108,127 @@ class Affiliate_WP_Upgrades {
 	/**
 	 * Perform database upgrades for version 1.7
 	 *
-	 * @access  public
+	 * @access  private
 	 * @since   1.7
 	 */
 	private function v17_upgrades() {
 
-		$integrations = affiliate_wp()->settings->get( 'integrations', array() );
+		$this->v17_upgrade_gforms();
 
-		if ( array_key_exists( 'gravityforms', $integrations ) ) {
+		$this->v17_upgrade_nforms();
 
-			global $wpdb;
+		$this->upgraded = true;
 
-			$forms = $wpdb->get_results( "SELECT id FROM {$wpdb->prefix}rg_form" );
+	}
 
-			if ( $forms ) {
+	/**
+	 * Perform database upgrades for Gravity Forms in version 1.7
+	 *
+	 * @access  private
+	 * @since   1.7
+	 */
+	private function v17_upgrade_gforms() {
 
-				foreach ( $forms as $form ) {
+		$settings = get_option( 'affwp_settings' );
 
-					$meta = $wpdb->get_var(
-						$wpdb->prepare(
-							"SELECT display_meta FROM {$wpdb->prefix}rg_form_meta WHERE form_id = %d",
-							$form->id
-						)
-					);
+		if ( empty( $settings['integrations'] ) || ! array_key_exists( 'gravityforms', $settings['integrations'] ) ) {
+			return;
+		}
 
-					$meta = json_decode( $meta );
+		global $wpdb;
 
-					if ( isset( $meta->gform_allow_referrals ) ) {
-						continue;
-					}
+		$tables = $wpdb->get_var( "SHOW TABLES LIKE '{$wpdb->prefix}rg_form%';" );
 
-					$meta->gform_allow_referrals = 1;
+		if ( ! $tables ) {
+			return;
+		}
 
-					$meta = json_encode( $meta );
+		$forms = $wpdb->get_results( "SELECT id FROM {$wpdb->prefix}rg_form;" );
 
-					$wpdb->query(
-						$wpdb->prepare(
-							"UPDATE {$wpdb->prefix}rg_form_meta SET display_meta = %s WHERE form_id = %d",
-							$meta,
-							$form->id
-						)
-					);
+		if ( ! $forms ) {
+			return;
+		}
 
-				}
+		foreach ( $forms as $form ) {
 
+			$meta = $wpdb->get_var(
+				$wpdb->prepare(
+					"SELECT display_meta FROM {$wpdb->prefix}rg_form_meta WHERE form_id = %d;",
+					$form->id
+				)
+			);
+
+			$meta = json_decode( $meta );
+
+			if ( isset( $meta->gform_allow_referrals ) ) {
+				continue;
 			}
+
+			$meta->gform_allow_referrals = 1;
+
+			$meta = json_encode( $meta );
+
+			$wpdb->query(
+				$wpdb->prepare(
+					"UPDATE {$wpdb->prefix}rg_form_meta SET display_meta = %s WHERE form_id = %d;",
+					$meta,
+					$form->id
+				)
+			);
 
 		}
 
-		$this->upgraded = true;
+	}
+
+	/**
+	 * Perform database upgrades for Ninja Forms in version 1.7
+	 *
+	 * @access  private
+	 * @since   1.7
+	 */
+	private function v17_upgrade_nforms() {
+
+		$settings = get_option( 'affwp_settings' );
+
+		if ( empty( $settings['integrations'] ) || ! array_key_exists( 'ninja-forms', $settings['integrations'] ) ) {
+			return;
+		}
+
+		global $wpdb;
+
+		$tables = $wpdb->get_var( "SHOW TABLES LIKE '{$wpdb->base_prefix}nf_object%';" );
+
+		if ( ! $tables ) {
+			return;
+		}
+
+		$forms = $wpdb->get_results( "SELECT id FROM {$wpdb->base_prefix}nf_objects WHERE type = 'form';" );
+
+		if ( ! $forms ) {
+			return;
+		}
+
+		// There could be forms that already have this meta saved in the DB, we will ignore those
+		$_forms = $wpdb->get_results( "SELECT object_id FROM {$wpdb->base_prefix}nf_objectmeta WHERE meta_key = 'affwp_allow_referrals';" );
+
+		$forms  = wp_list_pluck( $forms, 'id' );
+		$_forms = wp_list_pluck( $_forms, 'object_id' );
+		$forms  = array_diff( $forms, $_forms );
+
+		if ( ! $forms ) {
+			return;
+		}
+
+		foreach ( $forms as $form_id ) {
+
+			$wpdb->query(
+				$wpdb->prepare(
+					"INSERT INTO {$wpdb->base_prefix}nf_objectmeta (object_id,meta_key,meta_value) VALUES (%d,'affwp_allow_referrals','1');",
+					$form_id
+				)
+			);
+
+		}
 
 	}
 

@@ -97,12 +97,12 @@ $predefined_coupons = new WP_Query(
 
 		<div class="affwp-wrap affwp-add-coupon-code-wrap">
 			<label for="affwp-add-coupon-code"><?php _e( 'Code', 'affiliate-wp' ); ?></label>
-			<input type="text" name="coupon_code" id="affwp-add-coupon-code" />
+			<input type="text" name="coupon_code" id="affwp-add-coupon-code" required disabled />
 		</div>
 
 		<div class="affwp-wrap affwp-add-coupon-description-wrap">
 			<label for="affwp-add-coupon-description"><?php _e( 'Description', 'affiliate-wp' ); ?></label>
-			<textarea name="coupon_description" id="affwp-add-coupon-description"></textarea>
+			<textarea name="coupon_description" id="affwp-add-coupon-description" required disabled></textarea>
 		</div>
 
 		<div class="affwp-add-coupon-submit-wrap">

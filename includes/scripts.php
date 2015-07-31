@@ -131,6 +131,14 @@ function affwp_frontend_scripts_and_styles() {
 
 		if ( affiliate_wp()->integrations->is_enabled( 'woocommerce' ) ) {
 			wp_enqueue_script( 'affwp-coupons', AFFILIATEWP_PLUGIN_URL . 'assets/js/coupons' . $suffix . '.js', array( 'jquery' ), AFFILIATEWP_VERSION );
+			wp_localize_script(
+				'affwp-coupons',
+				'affwp_coupons_i18n',
+				array(
+					'delete_coupons'    => esc_attr__( 'Are you sure you want to delete the selected coupons?', 'affiliate-wp' ),
+					'template_required' => esc_attr__( 'Please select a coupon!', 'affiliate-wp' ),
+				)
+			);
 		}
 	}
 

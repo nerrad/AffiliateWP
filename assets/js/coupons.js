@@ -1,10 +1,16 @@
+/* globals affwp_coupons_i18n */
+
 jQuery( function( $ ) {
 
 	var $table     = $( '#affwp-coupons table' ),
 	    $thead     = $table.find( 'thead' ),
 	    $tbody     = $table.find( 'tbody' ),
 	    $deleteBtn = $( '#affwp-coupons-delete' ),
-	    $addBtn    = $( '#affwp-coupons-add' );
+	    $addBtn    = $( '#affwp-coupons-add' ),
+	    $template  = $( '#affwp-add-coupon-template' ),
+	    $code      = $( '#affwp-add-coupon-code' ),
+	    $desc      = $( '#affwp-add-coupon-description' );
+
 
 	function calc_rows() {
 		var found       = $tbody.find( 'tr:not( .hidden )' ).length,
@@ -39,7 +45,7 @@ jQuery( function( $ ) {
 	$deleteBtn.on( 'click', function( e ) {
 		e.preventDefault();
 
-		if ( ! window.confirm( 'Are you sure?' ) ) {
+		if ( ! window.confirm( affwp_coupons_i18n.delete_coupons ) ) {
 			return false;
 		}
 
@@ -52,28 +58,29 @@ jQuery( function( $ ) {
 		calc_rows();
 	});
 
-	var $template = $( '#affwp-add-coupon-template' );
-
-	// Change selection
+	// Change template selection
 	$template.on( 'change', function() {
 		var id    = $( this ).val(),
 		    code  = $( this ).find( ':selected' ).text(),
-		    desc  = $( this ).find( ':selected' ).data( 'coupon-description' ),
-		    $code = $( '#affwp-add-coupon-code' ),
-		    $desc = $( '#affwp-add-coupon-description' );
+		    desc  = $( this ).find( ':selected' ).data( 'coupon-description' );
 
 		$code.val( id > 0 ? code : '' );
 		$desc.text( id > 0 ? desc : '' );
+
+		$code.prop( 'disabled', id > 0 ? false : true );
+		$desc.prop( 'disabled', id > 0 ? false : true );
 	});
 
 	// Add new
 	$addBtn.on( 'click', function( e ) {
-		e.preventDefault();
-
 		if ( $template.val() < 0 ) {
-			window.alert( 'Please select a coupon!' );
+			window.alert( affwp_coupons_i18n.template_required );
 
 			return false;
+		}
+
+		if ( $code.val().length ) {
+			e.preventDefault();
 		}
 
 		calc_rows();

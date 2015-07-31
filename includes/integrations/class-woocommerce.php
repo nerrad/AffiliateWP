@@ -562,16 +562,24 @@ class Affiliate_WP_WooCommerce extends Affiliate_WP_Base {
 		$exists = get_page_by_title( $code, 'OBJECT', 'shop_coupon' );
 
 		if ( $exists ) {
-			wp_send_json_error( __( 'Sorry, that coupon code already exists.', 'affiliate-wp' ) );
+			wp_send_json_error( __( 'Sorry, that coupon already exists. Please try another code.', 'affiliate-wp' ) );
 		}
 
-		$inserted = $this->custom_coupons_clone_template( $id, $code, $desc );
+		$post = $this->custom_coupons_clone_template( $id, $code, $desc );
 
-		if ( false === $inserted ) {
+		if ( false === $post ) {
 			wp_send_json_error( __( 'Coupon could not be created.', 'affiliate-wp' ) );
 		}
 
-		wp_send_json_success();
+		$data = array(
+			'id'     => absint( $post->ID ),
+			'title'  => esc_js( $post->post_title ),
+			'desc'   => esc_js( $post->post_excerpt ),
+			'amount' => esc_js( get_post_meta( $post->ID, 'coupon_amount', true ) ),
+			'uses'   => absint( get_post_meta( $post->ID, 'usage_count', true ) ),
+		);
+
+		wp_send_json_success( $data );
 
 	}
 
@@ -624,7 +632,7 @@ class Affiliate_WP_WooCommerce extends Affiliate_WP_Base {
 
 		do_action( 'affwp_wc_custom_coupon_inserted', $template_id, $post_id, $affiliate_id );
 
-		return true;
+		return get_post( $post_id );
 
 	}
 

@@ -21,6 +21,8 @@ jQuery( function( $ ) {
 
 		( found > 0 ) ? $noRows.hide() : $noRows.show();
 
+		$thead.find( 'input:checkbox' ).prop( 'disabled', found > 0 ? false : true );
+
 		$deleteBtn.prop( 'disabled', selected ? false : true );
 
 		$thead.find( 'input:checkbox' ).prop( 'checked', allSelected ? true : false );
@@ -98,7 +100,7 @@ jQuery( function( $ ) {
 		    desc  = $( this ).find( ':selected' ).data( 'coupon-description' );
 
 		$code.val( id > 0 ? code : '' );
-		$desc.text( id > 0 ? desc : '' );
+		$desc.val( id > 0 ? desc : '' );
 
 		$code.prop( 'disabled', id > 0 ? false : true );
 		$desc.prop( 'disabled', id > 0 ? false : true );
@@ -125,7 +127,7 @@ jQuery( function( $ ) {
 			'nonce': nonce,
 			'id': $template.val(),
 			'code': $code.val(),
-			'description': $desc.val(),
+			'desc': $desc.val(),
 		};
 
 		$.ajax({
@@ -137,9 +139,11 @@ jQuery( function( $ ) {
 				if ( response.success ) {
 					$template.val( '-1' );
 					$code.val( '' );
-					$desc.text( '' );
+					$desc.val( '' );
 
-					calc_rows();
+					console.log( response.data );
+
+					insert_row( response.data );
 
 					return false;
 				}
@@ -147,6 +151,22 @@ jQuery( function( $ ) {
 				window.alert( response.data );
 			}
 		});
+	}
+
+	function insert_row( data ) {
+		var $emptyRow = $tbody.find( 'tr.affwp-empty-row' ),
+		    $clone    = $emptyRow.clone( false );
+
+		$clone.removeClass( 'affwp-hidden affwp-empty-row' );
+		$clone.attr( 'data-coupon-id', data.id );
+		$clone.find( 'td.affwp-coupon-title code' ).text( data.title );
+		$clone.find( 'td.affwp-coupon-description' ).text( data.desc );
+		$clone.find( 'td.affwp-coupon-amount' ).text( data.amount );
+		$clone.find( 'td.affwp-coupon-uses' ).text( data.uses );
+		$emptyRow.before( $clone );
+		$clone.show();
+
+		calc_rows();
 	}
 
 });

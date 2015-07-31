@@ -6,6 +6,8 @@ $coupons = new WP_Query(
 		'post_status' => 'publish',
 		'meta_key'    => 'affwp_discount_affiliate',
 		'meta_value'  => affwp_get_affiliate_id(),
+		'orderby'     => 'title',
+		'order'       => 'ASC',
 	)
 );
 
@@ -15,6 +17,8 @@ $predefined_coupons = new WP_Query(
 		'post_status' => 'publish',
 		'meta_key'    => 'affwp_allow_affiliate_variations',
 		'meta_value'  => 1,
+		'orderby'     => 'title',
+		'order'       => 'ASC',
 	)
 );
 
@@ -30,10 +34,10 @@ $predefined_coupons = new WP_Query(
 			<thead>
 				<tr>
 					<th><input type="checkbox"<?php disabled( ! $coupons->have_posts() ); ?> /></th>
-					<th>Coupon Code</th>
-					<th>Description</th>
-					<th>Amount</th>
-					<th>Uses</th>
+					<th><?php _e( 'Coupon Code', 'affiliate-wp' ); ?></th>
+					<th><?php _e( 'Description', 'affiliate-wp' ); ?></th>
+					<th><?php _e( 'Amount', 'affiliate-wp' ); ?></th>
+					<th><?php _e( 'Uses', 'affiliate-wp' ); ?></th>
 				</tr>
 			</thead>
 
@@ -54,16 +58,24 @@ $predefined_coupons = new WP_Query(
 						?>
 
 						<tr data-coupon-id="<?php echo absint( $post->ID ); ?>">
-							<td><input type="checkbox" /></td>
-							<td><code><?php echo esc_html( $post->post_title ); ?></code></td>
-							<td><?php echo nl2br( esc_html( $post->post_excerpt ) ); ?></td>
-							<td><?php echo esc_html( $coupon_amount ); ?></td>
-							<td><?php echo absint( get_post_meta( $post->ID, 'usage_count', true ) ); ?></td>
+							<td class="affwp-coupon-cb"><input type="checkbox" /></td>
+							<td class="affwp-coupon-title"><code><?php echo esc_html( $post->post_title ); ?></code></td>
+							<td class="affwp-coupon-description"><?php echo esc_html( $post->post_excerpt ); ?></td>
+							<td class="affwp-coupon-amount"><?php echo esc_html( $coupon_amount ); ?></td>
+							<td class="affwp-coupon-uses"><?php echo absint( get_post_meta( $post->ID, 'usage_count', true ) ); ?></td>
 						</tr>
 
 					<?php endwhile; ?>
 
 				<?php endif; ?>
+
+				<tr class="affwp-hidden affwp-empty-row" style="display:none;">
+					<td class="affwp-coupon-cb"><input type="checkbox" /></td>
+					<td class="affwp-coupon-title"><code></code></td>
+					<td class="affwp-coupon-description"></td>
+					<td class="affwp-coupon-amount"></td>
+					<td class="affwp-coupon-uses"></td>
+				</tr>
 
 			</tbody>
 
@@ -101,7 +113,7 @@ $predefined_coupons = new WP_Query(
 
 		<div class="affwp-wrap affwp-add-coupon-description-wrap">
 			<label for="affwp-add-coupon-description"><?php _e( 'Description', 'affiliate-wp' ); ?></label>
-			<textarea name="coupon_description" id="affwp-add-coupon-description" required disabled></textarea>
+			<textarea name="coupon_description" id="affwp-add-coupon-description" disabled></textarea>
 		</div>
 
 		<div class="affwp-add-coupon-submit-wrap">

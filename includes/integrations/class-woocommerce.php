@@ -620,6 +620,7 @@ class Affiliate_WP_WooCommerce extends Affiliate_WP_Base {
 		$affiliate_id = affwp_get_affiliate_id();
 
 		update_post_meta( $post_id, 'affwp_discount_affiliate', $affiliate_id );
+		update_post_meta( $post_id, 'affwp_coupon_from_template', $template_id );
 
 		do_action( 'affwp_wc_custom_coupon_inserted', $template_id, $post_id, $affiliate_id );
 
@@ -666,7 +667,11 @@ class Affiliate_WP_WooCommerce extends Affiliate_WP_Base {
 		}
 
 		if ( $i > 0 ) {
+
+			do_action( 'affwp_wc_custom_coupon_deleted', $coupon_id, $affiliate_id );
+
 			wp_send_json_success();
+
 		}
 
 		wp_send_json_error( __( 'An unknown error occured and no coupons could be deleted.', 'affiliate-wp' ) );

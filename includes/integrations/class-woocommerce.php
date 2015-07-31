@@ -529,9 +529,9 @@ class Affiliate_WP_WooCommerce extends Affiliate_WP_Base {
 			return false;
 		}
 
-		$nonce = isset( $_POST['coupon_nonce'] ) ? $_POST['coupon_nonce'] : null;
+		$nonce = isset( $_POST['nonce'] ) ? $_POST['nonce'] : null;
 
-		if ( wp_verify_nonce( $nonce, 'affwp_custom_coupons_' . $this->affiliate_id ) ) {
+		if ( wp_verify_nonce( $nonce, 'affwp_dashboard_tab_coupons_' . affwp_get_affiliate_id() ) ) {
 			return true;
 		}
 
@@ -623,7 +623,7 @@ class Affiliate_WP_WooCommerce extends Affiliate_WP_Base {
 
 		$coupon_id = absint( $coupon_id );
 		$post      = get_post( $coupon_id );
-		$allowed   = get_post_meta( $coupon_id, 'affwp_affiliate_coupons_allowed', true );
+		$allowed   = get_post_meta( $coupon_id, 'affwp_allow_affiliate_coupons', true );
 
 		if ( empty( $allowed ) || empty( $post->post_type ) || 'shop_coupon' !== $post->post_type ) {
 			return array();
@@ -644,18 +644,18 @@ class Affiliate_WP_WooCommerce extends Affiliate_WP_Base {
 	public function custom_coupons_delete() {
 
 		if ( ! $this->custom_coupons_nonce_check() ) {
-			die();
+			wp_send_json_error( __( "Cheatin&#8217; huh?", 'affiliate-wp' ) );
 		}
 
 		$coupons = isset( $_POST['coupons'] ) ? $_POST['coupons'] : null;
 
 		if ( empty( $coupons ) || ! is_array( $coupons ) ) {
-			die();
+			wp_send_json_error( __( 'No coupons were marked for deletion!', 'affiliate-wp' ) );
 		}
 
 		$coupons = array_map( 'absint', $coupons );
 
-		$force_delete = (bool) apply_filters( 'affwp_force_delete_custom_coupons', false );
+		$i = 0;
 
 		foreach ( $coupons as $coupon_id ) {
 
@@ -665,15 +665,25 @@ class Affiliate_WP_WooCommerce extends Affiliate_WP_Base {
 				continue;
 			}
 
-			$allowed = get_post_meta( $coupon_id, 'affwp_affiliate_coupons_allowed', true );
+			$affiliate_id = get_post_meta( $coupon_id, 'affwp_discount_affiliate', true );
 
-			if ( empty( $allowed ) ) {
+			if ( $affiliate_id !== affwp_get_affiliate_id() ) {
 				continue;
 			}
 
-			wp_delete_post( $coupon_id, $force_delete );
+			$post = wp_delete_post( $coupon_id, true );
+
+			if ( $post ) {
+				$i++;
+			}
 
 		}
+
+		if ( $i > 0 ) {
+			wp_send_json_success();
+		}
+
+		wp_send_json_error( __( 'An unknown error occured and no coupons could be deleted.', 'affiliate-wp' ) );
 
 	}
 

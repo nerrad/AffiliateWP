@@ -984,23 +984,3 @@ function affwp_get_affiliate_base_url() {
 	return apply_filters( 'affwp_affiliate_referral_url_base', $base_url );
 
 }
-
-/**
- * Return a unique affiliate identifier based on the ID
- *
- * @param  object|int $affiliate
- * @return string|bool
- */
-function affwp_get_affiliate_uid( $affiliate = null ) {
-
-	$affiliate_id = affwp_get_affiliate_id();
-
-	if ( is_object( $affiliate ) && isset( $affiliate->affiliate_id ) ) {
-		$affiliate_id = $affiliate->affiliate_id;
-	} elseif ( is_numeric( $affiliate ) ) {
-		$affiliate_id = absint( $affiliate );
-	}
-
-	return substr( md5( $affiliate_id ), 0, 5 );
-
-}

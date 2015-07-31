@@ -1,4 +1,4 @@
-/* globals affwp_coupons_i18n */
+/* globals affwp_coupons_vars */
 
 jQuery( function( $ ) {
 
@@ -9,13 +9,17 @@ jQuery( function( $ ) {
 	    $addBtn    = $( '#affwp-coupons-add' ),
 	    $template  = $( '#affwp-add-coupon-template' ),
 	    $code      = $( '#affwp-add-coupon-code' ),
-	    $desc      = $( '#affwp-add-coupon-description' );
-
+	    $desc      = $( '#affwp-add-coupon-description' ),
+	    login       = $( '#affwp-affiliate-login' ).val(),
+	    nonce      = $( '#coupon_nonce' ).val();
 
 	function calc_rows() {
-		var found       = $tbody.find( 'tr:not( .hidden )' ).length,
-		    selected    = $tbody.find( 'tr:not( .hidden ) input:checkbox:checked' ).length,
+		var $noRows     = $tbody.find( 'tr.affwp-no-results' ),
+		    found       = $tbody.find( 'tr:not( .affwp-hidden )' ).length,
+		    selected    = $tbody.find( 'tr:not( .affwp-hidden ) input:checkbox:checked' ).length,
 		    allSelected = ( found > 0 && found === selected );
+
+		( found > 0 ) ? $noRows.hide() : $noRows.show();
 
 		$deleteBtn.prop( 'disabled', selected ? false : true );
 
@@ -45,23 +49,52 @@ jQuery( function( $ ) {
 	$deleteBtn.on( 'click', function( e ) {
 		e.preventDefault();
 
-		if ( ! window.confirm( affwp_coupons_i18n.delete_coupons ) ) {
+		if ( ! window.confirm( affwp_coupons_vars.i18n.delete_coupons ) ) {
 			return false;
 		}
 
 		var $selectedRows = $tbody.find( 'tr:not( .hidden ) input:checkbox:checked' ).closest( 'tr' );
 
-		$selectedRows.remove();
-
-		$table.find( 'input:checkbox' ).prop( 'checked', false );
-
-		calc_rows();
+		ajax_delete( $selectedRows );
 	});
+
+	function ajax_delete( $selectedRows ) {
+		var ids = [];
+
+		$.each( $selectedRows, function() {
+			ids.push( $( this ).data( 'coupon-id' ) );
+		});
+
+		var data = {
+			'action': 'affwp_custom_coupons_delete',
+			'coupons': ids,
+			'nonce': nonce,
+		};
+
+		$.ajax({
+			type: 'POST',
+			url: affwp_coupons_vars.ajaxurl,
+			data: data,
+			dataType: 'json',
+			success: function( response ) {
+				if ( response.success ) {
+					$selectedRows.remove();
+					$table.find( 'input:checkbox' ).prop( 'checked', false );
+
+					calc_rows();
+
+					return false;
+				}
+
+				window.alert( response.data );
+			}
+		});
+	}
 
 	// Change template selection
 	$template.on( 'change', function() {
 		var id    = $( this ).val(),
-		    code  = $( this ).find( ':selected' ).text(),
+		    code  = $( this ).find( ':selected' ).text() + '_' + login,
 		    desc  = $( this ).find( ':selected' ).data( 'coupon-description' );
 
 		$code.val( id > 0 ? code : '' );
@@ -71,10 +104,10 @@ jQuery( function( $ ) {
 		$desc.prop( 'disabled', id > 0 ? false : true );
 	});
 
-	// Add new
+	// Add new coupon
 	$addBtn.on( 'click', function( e ) {
 		if ( $template.val() < 0 ) {
-			window.alert( affwp_coupons_i18n.template_required );
+			window.alert( affwp_coupons_vars.i18n.template_required );
 
 			return false;
 		}

@@ -39,39 +39,38 @@ $predefined_coupons = new WP_Query(
 
 			<tbody>
 
-			<?php if ( $coupons->have_posts() ) : ?>
-
-				<?php while ( $coupons->have_posts() ) : $coupons->the_post(); ?>
-
-					<?php
-					$discount_type = get_post_meta( $post->ID, 'discount_type', true );
-					$coupon_amount = get_post_meta( $post->ID, 'coupon_amount', true );
-					$coupon_amount = ( 'percent' === $discount_type ) ? affwp_format_amount( $coupon_amount ) . '%' : affwp_currency_filter( affwp_format_amount( $coupon_amount ) );
-					?>
-
-					<tr>
-						<td><input type="checkbox" /></td>
-						<td><code><?php echo esc_html( $post->post_title ); ?></code></td>
-						<td><?php echo nl2br( esc_html( $post->post_excerpt ) ); ?></td>
-						<td><?php echo esc_html( $coupon_amount ); ?></td>
-						<td><?php echo absint( get_post_meta( $post->ID, 'usage_count', true ) ); ?></td>
-					</tr>
-
-				<?php endwhile; ?>
-
-			<?php else : ?>
-
-				<tr>
+				<tr class="affwp-hidden affwp-no-results" style="display:none;">
 					<td colspan="5"><?php _e( 'Sorry, no coupons found.', 'affiliate-wp' ); ?></td>
 				</tr>
 
-			<?php endif; ?>
+				<?php if ( $coupons->have_posts() ) : ?>
+
+					<?php while ( $coupons->have_posts() ) : $coupons->the_post(); ?>
+
+						<?php
+						$discount_type = get_post_meta( $post->ID, 'discount_type', true );
+						$coupon_amount = get_post_meta( $post->ID, 'coupon_amount', true );
+						$coupon_amount = ( 'percent' === $discount_type ) ? affwp_format_amount( $coupon_amount ) . '%' : affwp_currency_filter( affwp_format_amount( $coupon_amount ) );
+						?>
+
+						<tr data-coupon-id="<?php echo absint( $post->ID ); ?>">
+							<td><input type="checkbox" /></td>
+							<td><code><?php echo esc_html( $post->post_title ); ?></code></td>
+							<td><?php echo nl2br( esc_html( $post->post_excerpt ) ); ?></td>
+							<td><?php echo esc_html( $coupon_amount ); ?></td>
+							<td><?php echo absint( get_post_meta( $post->ID, 'usage_count', true ) ); ?></td>
+						</tr>
+
+					<?php endwhile; ?>
+
+				<?php endif; ?>
 
 			</tbody>
 
 		</table>
 
 		<div class="affwp-coupons-submit-wrap">
+			<?php wp_nonce_field( 'affwp_dashboard_tab_coupons_' . affwp_get_affiliate_id(), 'coupon_nonce' ); ?>
 			<input type="submit" id="affwp-coupons-delete" class="button" value="<?php esc_attr_e( 'Delete Selected', 'affiliate-wp' ); ?>" />
 		</div>
 
@@ -79,7 +78,7 @@ $predefined_coupons = new WP_Query(
 
 	<h4><?php _e( 'Add New', 'affiliate-wp' ); ?></h4>
 
-	<p><?php _e( 'Create an exclusive coupon code for your audience, and receive credit for every referral!', 'affiliate-wp' ); ?></p>
+	<p><?php _e( 'Create a custom coupon code for your audience, and receive credit for every referral!', 'affiliate-wp' ); ?></p>
 
 	<form method="post" id="affwp-add-coupon" class="affwp-form">
 
@@ -107,7 +106,7 @@ $predefined_coupons = new WP_Query(
 
 		<div class="affwp-add-coupon-submit-wrap">
 			<?php wp_nonce_field( 'affwp_dashboard_tab_coupons_' . affwp_get_affiliate_id(), 'coupon_nonce' ); ?>
-			<input type="hidden" class="affwp-affiliate-uid" value="<?php echo esc_attr( affwp_get_affiliate_uid() ); ?>" />
+			<input type="hidden" id="affwp-affiliate-login" value="<?php echo sanitize_key( affwp_get_affiliate_login( affwp_get_affiliate_id() ) ); ?>" />
 			<input type="submit" id="affwp-coupons-add" class="button" value="<?php esc_attr_e( 'Add Coupon', 'affiliate-wp' ); ?>" />
 		</div>
 

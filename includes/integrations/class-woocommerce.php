@@ -581,11 +581,15 @@ class Affiliate_WP_WooCommerce extends Affiliate_WP_Base {
 			wp_send_json_error( __( 'Coupon could not be created.', 'affiliate-wp' ) );
 		}
 
+		$discount_type = get_post_meta( $post->ID, 'discount_type', true );
+		$coupon_amount = absint( get_post_meta( $post->ID, 'coupon_amount', true ) );
+		$coupon_amount = ( 'percent' === $discount_type ) ? affwp_format_amount( $coupon_amount ) . '%' : affwp_currency_filter( affwp_format_amount( $coupon_amount ) );
+
 		$data = array(
 			'id'     => absint( $post->ID ),
 			'title'  => esc_js( $post->post_title ),
 			'desc'   => esc_js( $post->post_excerpt ),
-			'amount' => esc_js( get_post_meta( $post->ID, 'coupon_amount', true ) ),
+			'amount' => esc_js( $coupon_amount ),
 			'uses'   => absint( get_post_meta( $post->ID, 'usage_count', true ) ),
 		);
 

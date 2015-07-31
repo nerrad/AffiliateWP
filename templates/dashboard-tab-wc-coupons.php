@@ -53,7 +53,7 @@ $coupon_templates = new WP_Query(
 
 						<?php
 						$discount_type = get_post_meta( $post->ID, 'discount_type', true );
-						$coupon_amount = get_post_meta( $post->ID, 'coupon_amount', true );
+						$coupon_amount = absint( get_post_meta( $post->ID, 'coupon_amount', true ) );
 						$coupon_amount = ( 'percent' === $discount_type ) ? affwp_format_amount( $coupon_amount ) . '%' : affwp_currency_filter( affwp_format_amount( $coupon_amount ) );
 						?>
 

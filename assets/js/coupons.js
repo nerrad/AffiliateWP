@@ -141,8 +141,6 @@ jQuery( function( $ ) {
 					$code.val( '' );
 					$desc.val( '' );
 
-					console.log( response.data );
-
 					insert_row( response.data );
 
 					return false;

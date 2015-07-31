@@ -1,6 +1,6 @@
 <?php
 
-$coupons = new WP_Query(
+$my_coupons = new WP_Query(
 	array(
 		'post_type'   => 'shop_coupon',
 		'post_status' => 'publish',
@@ -11,7 +11,7 @@ $coupons = new WP_Query(
 	)
 );
 
-$predefined_coupons = new WP_Query(
+$coupon_templates = new WP_Query(
 	array(
 		'post_type'   => 'shop_coupon',
 		'post_status' => 'publish',
@@ -33,7 +33,7 @@ $predefined_coupons = new WP_Query(
 		<table class="affwp-table affwp-coupons-table">
 			<thead>
 				<tr>
-					<th><input type="checkbox"<?php disabled( ! $coupons->have_posts() ); ?> /></th>
+					<th><input type="checkbox"<?php disabled( ! $my_coupons->have_posts() ); ?> /></th>
 					<th><?php _e( 'Coupon Code', 'affiliate-wp' ); ?></th>
 					<th><?php _e( 'Description', 'affiliate-wp' ); ?></th>
 					<th><?php _e( 'Amount', 'affiliate-wp' ); ?></th>
@@ -47,9 +47,9 @@ $predefined_coupons = new WP_Query(
 					<td colspan="5"><?php _e( 'Sorry, no coupons found.', 'affiliate-wp' ); ?></td>
 				</tr>
 
-				<?php if ( $coupons->have_posts() ) : ?>
+				<?php if ( $my_coupons->have_posts() ) : ?>
 
-					<?php while ( $coupons->have_posts() ) : $coupons->the_post(); ?>
+					<?php while ( $my_coupons->have_posts() ) : $my_coupons->the_post(); ?>
 
 						<?php
 						$discount_type = get_post_meta( $post->ID, 'discount_type', true );
@@ -102,8 +102,8 @@ $predefined_coupons = new WP_Query(
 			<label for="affwp-add-coupon-template"><?php _e( 'Coupon', 'affiliate-wp' ); ?></label>
 			<select name="coupon_template" id="affwp-add-coupon-template" required>
 				<option value="-1"><?php _e( '- Select One -', 'affiliate-wp' ); ?></option>
-				<?php if ( $predefined_coupons->have_posts() ) : ?>
-					<?php while ( $predefined_coupons->have_posts() ) : $predefined_coupons->the_post(); ?>
+				<?php if ( $coupon_templates->have_posts() ) : ?>
+					<?php while ( $coupon_templates->have_posts() ) : $coupon_templates->the_post(); ?>
 						<option value="<?php echo absint( $post->ID ) ?>" data-coupon-description="<?php echo esc_attr( $post->post_excerpt ); ?>"><?php echo esc_html( $post->post_title ); ?></option>
 					<?php endwhile; ?>
 				<?php endif; ?>

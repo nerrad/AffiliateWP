@@ -501,11 +501,21 @@ class Affiliate_WP_WooCommerce extends Affiliate_WP_Base {
 
 	public function custom_coupons_enabled() {
 
-		$option = affiliate_wp()->settings->get( 'custom_coupons_enabled' );
+		$coupon_templates = new WP_Query(
+			array(
+				'post_type'      => 'shop_coupon',
+				'post_status'    => 'publish',
+				'meta_key'       => 'affwp_allow_affiliate_variations',
+				'meta_value'     => 1,
+				'posts_per_page' => 1,
+			)
+		);
 
-		return true; // Temp
+		if ( $coupon_templates->have_posts() ) {
+			return true;
+		}
 
-		return ! empty( $option );
+		return false;
 
 	}
 
@@ -542,7 +552,7 @@ class Affiliate_WP_WooCommerce extends Affiliate_WP_Base {
 	public function custom_coupons_add() {
 
 		if ( ! $this->custom_coupons_nonce_check() ) {
-			wp_send_json_error( __( "Cheatin&#8217; huh?", 'affiliate-wp' ) );
+			wp_send_json_error( __( "Cheatin' huh?", 'affiliate-wp' ) );
 		}
 
 		$id     = ! empty( $_POST['id'] ) ? absint( $_POST['id'] )                : null;
@@ -639,7 +649,7 @@ class Affiliate_WP_WooCommerce extends Affiliate_WP_Base {
 	public function custom_coupons_delete() {
 
 		if ( ! $this->custom_coupons_nonce_check() ) {
-			wp_send_json_error( __( "Cheatin&#8217; huh?", 'affiliate-wp' ) );
+			wp_send_json_error( __( "Cheatin' huh?", 'affiliate-wp' ) );
 		}
 
 		$coupons = isset( $_POST['coupons'] ) ? $_POST['coupons'] : null;

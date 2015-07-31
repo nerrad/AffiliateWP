@@ -203,4 +203,20 @@ jQuery(document).ready(function($) {
 		maybe_activate_migrate_users_button();
 	});
 
+	// WooCommerce coupon options
+	function check_variations_option() {
+		if ( $( '#affwp_allow_affiliate_variations' ).is( ':checked' ) ) {
+			$( '.affwp_user_name_field #user_name' ).val( '' );
+			$( '.affwp_user_name_field' ).hide();
+		} else {
+			$( '.affwp_user_name_field' ).show();
+		};
+	}
+
+	check_variations_option();
+
+	$( 'body' ).on( 'change', '#affwp_allow_affiliate_variations', function() {
+		check_variations_option();
+	});
+
 });

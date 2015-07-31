@@ -280,9 +280,15 @@ class Affiliate_WP_WooCommerce extends Affiliate_WP_Base {
 		$user_id           = affwp_get_affiliate_user_id( $affiliate_id );
 		$user              = get_userdata( $user_id );
 		$user_name         = $user ? $user->user_login : '';
-		$affiliate_coupons = get_post_meta( $post->ID, 'affwp_allow_affiliate_coupons', true );
+		$affiliate_coupons = get_post_meta( $post->ID, 'affwp_allow_affiliate_variations', true );
 ?>
-		<p class="form-field affwp-woo-coupon-field">
+		<p class="form-field affwp-woo-coupon-field affwp_allow_affiliate_variations_field">
+			<label for="affwp_allow_affiliate_variations"><?php _e( 'Affiliate Variations?', 'affiliate-wp' ); ?></label>
+			<input type="checkbox" class="checkbox" style="" name="affwp_allow_affiliate_variations" id="affwp_allow_affiliate_variations" value="yes" <?php checked( $affiliate_coupons ); ?>>
+			<span class="description"><?php _e( 'Check this box if you want to allow affiliates to create their own variations of this coupon to promote to their audience.', 'affiliate-wp' ); ?></span>
+		</p>
+
+		<p class="form-field affwp-woo-coupon-field affwp_user_name_field">
 			<label for="user_name"><?php _e( 'Affiliate Discount?', 'affiliate-wp' ); ?></label>
 			<span class="affwp-ajax-search-wrap">
 				<span class="affwp-woo-coupon-input-wrap">
@@ -293,12 +299,6 @@ class Affiliate_WP_WooCommerce extends Affiliate_WP_Base {
 				<span id="affwp_user_search_results"></span>
 				<img class="help_tip" data-tip='<?php _e( 'If you would like to connect this discount to an affiliate, enter the name of the affiliate it belongs to.', 'affiliate-wp' ); ?>' src="<?php echo WC()->plugin_url(); ?>/assets/images/help.png" height="16" width="16" />
 			</span>
-		</p>
-
-		<p class="form-field affwp_allow_affiliate_coupons_field ">
-			<label for="affwp_allow_affiliate_coupons"><?php _e( 'Affiliate Coupon?', 'affiliate-wp' ); ?></label>
-			<input type="checkbox" class="checkbox" style="" name="affwp_allow_affiliate_coupons" id="affwp_allow_affiliate_coupons" value="yes" <?php checked( $affiliate_coupons ); ?>>
-			<span class="description"><?php _e( 'Check this box if you want to allow affiliates to create their own variations of this coupon to promote to their audience.', 'affiliate-wp' ); ?></span>
 		</p>
 <?php
 	}
@@ -344,15 +344,15 @@ class Affiliate_WP_WooCommerce extends Affiliate_WP_Base {
 	*/
 	public function store_allow_affiliate_coupons( $coupon_id = 0 ) {
 
-		if ( empty( $_POST['affwp_allow_affiliate_coupons'] ) ) {
+		if ( empty( $_POST['affwp_allow_affiliate_variations'] ) ) {
 
-			delete_post_meta( $coupon_id, 'affwp_allow_affiliate_coupons' );
+			delete_post_meta( $coupon_id, 'affwp_allow_affiliate_variations' );
 
 			return;
 
 		}
 
-		update_post_meta( $coupon_id, 'affwp_allow_affiliate_coupons', 1 );
+		update_post_meta( $coupon_id, 'affwp_allow_affiliate_variations', 1 );
 
 	}
 
@@ -553,7 +553,7 @@ class Affiliate_WP_WooCommerce extends Affiliate_WP_Base {
 			wp_send_json_error( __( 'Sorry, that is not a valid entry.', 'affiliate-wp' ) );
 		}
 
-		$allowed = get_post_meta( $id, 'affwp_allow_affiliate_coupons', true );
+		$allowed = get_post_meta( $id, 'affwp_allow_affiliate_variations', true );
 
 		if ( ! $allowed ) {
 			wp_send_json_error( __( 'Sorry, that is not a valid coupon template.', 'affiliate-wp' ) );

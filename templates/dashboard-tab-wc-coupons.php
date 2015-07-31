@@ -13,7 +13,7 @@ $predefined_coupons = new WP_Query(
 	array(
 		'post_type'   => 'shop_coupon',
 		'post_status' => 'publish',
-		'meta_key'    => 'affwp_allow_affiliate_coupons',
+		'meta_key'    => 'affwp_allow_affiliate_variations',
 		'meta_value'  => 1,
 	)
 );

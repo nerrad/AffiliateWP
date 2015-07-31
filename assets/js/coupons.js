@@ -10,7 +10,7 @@ jQuery( function( $ ) {
 	    $template  = $( '#affwp-add-coupon-template' ),
 	    $code      = $( '#affwp-add-coupon-code' ),
 	    $desc      = $( '#affwp-add-coupon-description' ),
-	    login       = $( '#affwp-affiliate-login' ).val(),
+	    login      = $( '#affwp-affiliate-login' ).val(),
 	    nonce      = $( '#coupon_nonce' ).val();
 
 	function calc_rows() {
@@ -67,8 +67,8 @@ jQuery( function( $ ) {
 
 		var data = {
 			'action': 'affwp_custom_coupons_delete',
-			'coupons': ids,
 			'nonce': nonce,
+			'coupons': ids
 		};
 
 		$.ajax({
@@ -116,7 +116,37 @@ jQuery( function( $ ) {
 			e.preventDefault();
 		}
 
-		calc_rows();
+		ajax_add();
 	});
+
+	function ajax_add() {
+		var data = {
+			'action': 'affwp_custom_coupons_add',
+			'nonce': nonce,
+			'id': $template.val(),
+			'code': $code.val(),
+			'description': $desc.val(),
+		};
+
+		$.ajax({
+			type: 'POST',
+			url: affwp_coupons_vars.ajaxurl,
+			data: data,
+			dataType: 'json',
+			success: function( response ) {
+				if ( response.success ) {
+					$template.val( '-1' );
+					$code.val( '' );
+					$desc.text( '' );
+
+					calc_rows();
+
+					return false;
+				}
+
+				window.alert( response.data );
+			}
+		});
+	}
 
 });

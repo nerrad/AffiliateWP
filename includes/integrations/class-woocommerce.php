@@ -542,67 +542,59 @@ class Affiliate_WP_WooCommerce extends Affiliate_WP_Base {
 	public function custom_coupons_add() {
 
 		if ( ! $this->custom_coupons_nonce_check() ) {
-			die();
+			wp_send_json_error( __( "Cheatin&#8217; huh?", 'affiliate-wp' ) );
 		}
 
-		$coupon_id   = isset( $_POST['coupon_id'] )          ? $_POST['coupon_id']          : null;
-		$code        = isset( $_POST['coupon_code'] )        ? $_POST['coupon_code']        : null;
-		$description = isset( $_POST['coupon_description'] ) ? $_POST['coupon_description'] : null;
-		$type        = isset( $_POST['coupon_type'] )        ? $_POST['coupon_type']        : null;
-		$amount      = isset( $_POST['coupon_amount'] )      ? $_POST['coupon_amount']      : null;
+		$id     = ! empty( $_POST['id'] ) ? absint( $_POST['id'] )                : null;
+		$code   = isset( $_POST['code'] ) ? sanitize_text_field( $_POST['code'] ) : null;
+		$desc   = isset( $_POST['desc'] ) ? sanitize_text_field( $_POST['desc'] ) : null;
 
-		$args = array(
-			'coupon_id'   => $coupon_id,
-			'code'        => $code,
-			'description' => $description,
-			'type'        => $type,
-			'amount'      => $amount,
-		);
+		if ( empty( $id ) || empty( $code ) ) {
+			wp_send_json_error( __( 'Sorry, that is not a valid entry.', 'affiliate-wp' ) );
+		}
 
-		$inserted = $this->custom_coupons_coupons_insert( $args );
+		$allowed = get_post_meta( $id, 'affwp_allow_affiliate_coupons', true );
+
+		if ( ! $allowed ) {
+			wp_send_json_error( __( 'Sorry, that is not a valid coupon template.', 'affiliate-wp' ) );
+		}
+
+		$exists = get_page_by_title( $code, 'OBJECT', 'shop_coupon' );
+
+		if ( $exists ) {
+			wp_send_json_error( __( 'Sorry, that coupon code already exists.', 'affiliate-wp' ) );
+		}
+
+		$inserted = $this->custom_coupons_clone_template( $id, $code, $desc );
 
 		if ( false === $inserted ) {
-			die();
+			wp_send_json_error( __( 'Coupon could not be created.', 'affiliate-wp' ) );
 		}
 
-		die();
+		wp_send_json_success();
 
 	}
 
-	public function custom_coupons_insert( $args ) {
+	public function custom_coupons_clone_template( $template_id, $code, $desc = null ) {
 
 		if ( ! $this->custom_coupons_enabled() ) {
 			return false;
 		}
 
-		$defaults = array(
-			'user_id'     => affwp_get_affiliate_user_id( $this->affiliate_id ),
-			'code'        => null,
-			'description' => null,
-			'type'        => 'fixed_cart',
-			'amount'      => null,
-		);
+		$template = get_post( absint( $template_id ) );
 
-		$coupon_id = isset( $args['coupon_id'] ) ? intval( $args['coupon_id'] ) : null;
-
-		if ( $coupon_id > 0 ) {
-			$defaults = array_merge( $defaults, $this->custom_coupons_get_predefined_args( $coupon_id ) );
-		}
-
-		$args = wp_parse_args( $args, $defaults );
-
-		if ( empty( $args['user_id'] ) || empty( $args['code'] ) || empty( $args['type'] ) || empty( $args['amount'] ) ) {
+		if ( ! $template ) {
 			return false;
 		}
 
-		// Must be an allowed type
-		$args['type'] = in_array( $args['type'], array( 'fixed_cart', 'percent' ) ) ? $args['type'] : 'fixed_cart';
+		$desc = ! empty( $desc ) ? $desc : $template->post_excerpt;
 
 		$args = array(
 			'post_type'    => 'shop_coupon',
-			'post_title'   => sanitize_text_field( $args['code'] ),
-			'post_author'  => absint( $args['user_id'] ),
-			'post_excerpt' => sanitize_text_field( $args['description'] ),
+			'post_status'  => 'publish',
+			'post_title'   => $code,
+			'post_author'  => get_current_user_id(),
+			'post_excerpt' => $desc,
 		);
 
 		$post_id = wp_insert_post( $args );
@@ -611,33 +603,27 @@ class Affiliate_WP_WooCommerce extends Affiliate_WP_Base {
 			return false;
 		}
 
-		update_post_meta( $post_id, 'discount_type', sanitize_text_field( $args['type'] ) );
-		update_post_meta( $post_id, 'coupon_amount', floatval( $args['amount'] ) );
-		update_post_meta( $post_id, 'affwp_discount_affiliate', absint( $args['user_id'] ) );
+		$meta = get_post_meta( $template_id );
 
-		return true;
+		foreach ( $meta as $key => $value ) {
 
-	}
+			if ( '_' === substr( $key, 0, 1 ) || 'affwp_' === substr( $key, 0, 6 ) ) {
+				continue;
+			}
 
-	public function custom_coupons_get_predefined_args( $coupon_id ) {
+			$value = ! empty( $value[0] ) ? maybe_unserialize( $value[0] ) : null;
 
-		$coupon_id = absint( $coupon_id );
-		$post      = get_post( $coupon_id );
-		$allowed   = get_post_meta( $coupon_id, 'affwp_allow_affiliate_coupons', true );
+			update_post_meta( $post_id, $key, $value );
 
-		if ( empty( $allowed ) || empty( $post->post_type ) || 'shop_coupon' !== $post->post_type ) {
-			return array();
 		}
 
-		$type   = get_post_meta( $coupon_id, 'discount_type', true );
-		$amount = get_post_meta( $coupon_id, 'coupon_amount', true );
+		$affiliate_id = affwp_get_affiliate_id();
 
-		$args = array(
-			'type'   => $type,
-			'amount' => $amount,
-		);
+		update_post_meta( $post_id, 'affwp_discount_affiliate', $affiliate_id );
 
-		return (array) $args;
+		do_action( 'affwp_wc_custom_coupon_inserted', $template_id, $post_id, $affiliate_id );
+
+		return true;
 
 	}
 

@@ -90,7 +90,11 @@ $predefined_coupons = new WP_Query(
 
 	<h4><?php _e( 'Add New', 'affiliate-wp' ); ?></h4>
 
-	<p><?php _e( 'Create a custom coupon code for your audience, and receive credit for every referral!', 'affiliate-wp' ); ?></p>
+	<ol>
+		<li><?php _e( 'Pick from the list of our available coupon codes below.', 'affiliate-wp' ); ?></li>
+		<li><?php _e( "Customize the coupon's code and description for your audience.", 'affiliate-wp' ); ?></li>
+		<li><?php _e( 'Receive credit for every referral who uses it!', 'affiliate-wp' ); ?></li>
+	</ol>
 
 	<form method="post" id="affwp-add-coupon" class="affwp-form">
 

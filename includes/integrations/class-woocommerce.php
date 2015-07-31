@@ -296,9 +296,9 @@ class Affiliate_WP_WooCommerce extends Affiliate_WP_Base {
 		</p>
 
 		<p class="form-field affwp_allow_affiliate_coupons_field ">
-			<label for="affwp_allow_affiliate_coupons">Affiliate Coupon?</label>
+			<label for="affwp_allow_affiliate_coupons"><?php _e( 'Affiliate Coupon?', 'affiliate-wp' ); ?></label>
 			<input type="checkbox" class="checkbox" style="" name="affwp_allow_affiliate_coupons" id="affwp_allow_affiliate_coupons" value="yes" <?php checked( $affiliate_coupons ); ?>>
-			<span class="description">Check this box if you want to allow affiliates to customize this coupon and promote it to their audience.</span>
+			<span class="description"><?php _e( 'Check this box if you want to allow affiliates to create their own variations of this coupon to promote to their audience.', 'affiliate-wp' ); ?></span>
 		</p>
 <?php
 	}

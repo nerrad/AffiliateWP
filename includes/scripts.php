@@ -128,6 +128,10 @@ function affwp_frontend_scripts_and_styles() {
 		if ( affwp_is_recaptcha_enabled() ) {
 			wp_enqueue_script( 'affwp-recaptcha', 'https://www.google.com/recaptcha/api.js', array(), AFFILIATEWP_VERSION );
 		}
+
+		if ( affiliate_wp()->integrations->is_enabled( 'woocommerce' ) ) {
+			wp_enqueue_script( 'affwp-coupons', AFFILIATEWP_PLUGIN_URL . 'assets/js/coupons' . $suffix . '.js', array( 'jquery' ), AFFILIATEWP_VERSION );
+		}
 	}
 
 }
